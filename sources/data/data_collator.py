@@ -404,7 +404,6 @@ def get_concat_batch_inputs(code_raw, code_vocab, max_code_len,
     inputs = torch.cat([inputs for inputs in [code_inputs, ast_inputs, nl_inputs] if inputs is not None], dim=-1)
     padding_mask = torch.cat([mask for mask in [code_padding_mask, ast_padding_mask, nl_padding_mask]
                               if mask is not None], dim=-1)
-
     # code_inputs, code_padding_mask = get_batch_inputs(batch=code_raw,
     #                                                   vocab=code_vocab,
     #                                                   processor=Vocab.sep_processor,

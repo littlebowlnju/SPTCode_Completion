@@ -4,6 +4,7 @@ from transformers import BartConfig, Seq2SeqTrainingArguments, EarlyStoppingCall
 
 import logging
 import os
+import torch
 
 from data.vocab import Vocab, load_vocab, init_vocab
 from model.bart import BartForClassificationAndGeneration
@@ -30,7 +31,7 @@ def run_completion(
     :param source: str, source code string
     :param trained_model: trained model,
     :param trained_vocab: trained vocab
-    :return:
+    :return: list[str], list of predictions with highest probability, len == 5
     """
     # -------------------------------
     # vocabs
@@ -79,10 +80,8 @@ def run_completion(
 
     def decode_preds(preds):
         preds, labels = preds
-        # decoded_preds = code_vocab.decode_batch(preds)
-        decoded_preds = code_vocab.decode(preds)
-        # decoded_labels = code_vocab.decode_batch(labels)
-        decoded_labels = code_vocab.decode(labels)
+        decoded_preds = code_vocab.decode_batch(preds)
+        decoded_labels = code_vocab.decode_batch(labels)
         return decoded_labels, decoded_preds
 
     # compute metrics
@@ -111,7 +110,7 @@ def run_completion(
         return result
 
     training_args = Seq2SeqTrainingArguments(output_dir=os.path.join(args.checkpoint_root, 'completion'),
-                                             overwrite_output_dir=True,
+                                             overwrite_output_dir=False,
                                              do_train=True,
                                              do_eval=True,
                                              do_predict=True,
@@ -162,19 +161,28 @@ def run_completion(
     logger.info('Running configurations initialized successfully')
 
     # -----------------------------
+    # generate model input from source code
+    # -----------------------------
+    inputs = generate_input(args, source)
+    # inputs = my_parse_for_completion(args, './dataset/source.txt', './dataset/target.txt')
+
+    # -----------------------------
     # predict
     # -----------------------------
-    logger.info('-' * 100)
-    logger.info('Start predicting')
-    trainer.compute_metrics = compute_test_metrics
-    # inputs = generate_input(args, source)
-    inputs = my_parse_for_completion(args, './dataset/source.txt', './dataset/target.txt')
-    loss, digits, labels = trainer.prediction_step(model, inputs, False)
-    decoded_pred, decode_label = decode_preds((digits, labels))
-    print(decoded_pred)
-    print('-'*100)
-    print(decode_label)
-    # predict_metrics = predict_results.metrics
-    # references = predict_metrics.pop('test_references')
-    # candidates = predict_metrics.pop('test_candidates')
-    return decoded_pred, decode_label
+    predictions = []
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    outputs = model.generate(
+        input_ids=inputs['input_ids'].to(device),
+        attention_mask=inputs['attention_mask'].to(device),
+        max_length=args.completion_max_len,
+        min_length=3,
+        early_stopping=True,
+        num_beams=args.beam_width,
+        num_return_sequences=5
+    )
+    outputs = outputs.view(1, -1, outputs.size(-1))
+    for output in outputs:
+        predictions = code_vocab.decode_batch(output.cpu().numpy())  # decode to strings
+    print('--------------- predictions -----------------')
+    print(predictions)
+    return predictions

@@ -50,18 +50,58 @@ def tokenize_source(source, use_regular=False):
     return trim_spaces(code)
 
 
+def restore_source(sub_source):
+    """
+        Transfer split source to source code, which can be parsed into AST.
+
+        Args:
+            sub_source (str): Split code
+
+        Returns:
+            str: Source code that can be parsed
+
+    """
+    tokens = sub_source.split()
+    is_subtoken = False
+    restored_source = ''
+    for token in tokens:
+        if token == '_':
+            is_subtoken = True
+            continue
+        if token == 'PRED':
+            token = Vocab.MSK_TOKEN
+        if is_subtoken:
+            restored_source += token.capitalize()
+        else:
+            restored_source += f' {token}'
+        is_subtoken = False
+    return restored_source.strip()
+
+
 def generate_input(args, source):
     """
     Generate input from source code sting
     :param source: str, source code string
     :return: code, ast, nl of source code
     """
-    # code = tokenize_source(source),
-    code = source
+    # split source code to split source
+    code = tokenize_source(source).strip()
+    print('-------split code---------')
     print(code)
-    ast, name = generate_single_ast_nl(source)
+    # restore
+    code = restore_source(code)
+    print('-------restored code--------')
+    print(code)
+    # generate ast and nl from restored code
+    ast, name = generate_single_ast_nl(code)
     print(ast)
     print(name)
+
+    # transfer to sequence
+    code = [code]
+    ast = [ast]
+    name = [name]
+
     model_inputs = {}
     model_inputs['input_ids'], model_inputs['attention_mask'] = get_concat_batch_inputs(
         code_raw=code,
@@ -110,38 +150,8 @@ def parse_for_completion(source_path, target_path):
             - List of strings: target code
 
     """
-    def restore_source(sub_source):
-        """
-        Transfer split source to source code, which can be parsed into AST.
-
-        Args:
-            sub_source (str): Split code
-
-        Returns:
-            str: Source code that can be parsed
-
-        """
-        tokens = sub_source.split()
-        is_subtoken = False
-        restored_source = ''
-        for token in tokens:
-            if token == '_':
-                is_subtoken = True
-                continue
-            if token == 'PRED':
-                token = Vocab.MSK_TOKEN
-            if is_subtoken:
-                restored_source += token.capitalize()
-            else:
-                restored_source += f' {token}'
-            is_subtoken = False
-        return restored_source.strip()
-
     source_lines = load_lines(source_path)
     target_lines = load_lines(target_path)
-    # print(source_lines)
-    # print('-'*100)
-    # print(target_lines)
     assert len(source_lines) == len(target_lines)
 
     codes = []

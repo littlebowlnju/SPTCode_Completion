@@ -1,13 +1,23 @@
 import argparse
-from data.data_utils import tokenize_source, parse_for_completion
+from data.data_utils import tokenize_source, parse_for_completion, generate_input
 from data.ast.ast_parser import generate_single_ast_nl
 from args import add_args
 from completion import run_completion
 import os
 import time
 
+# ------ original source ------------
+# SOURCE = "public int[] twoSum(int[] nums, int target) {" \
+#          "int n = nums.length;" \
+#          "for (int i = 0; i < n; ++i) {" \
+#          "for (int j = i + 1; j < n; ++j) {" \
+#          "if (nums[i] + nums[j] == target) {" \
+#          "return new int[]{i, j};}}}" \
+#          "return new int[0];}"
+
+# ------- source with PRED token -------------
 SOURCE = "public int[] twoSum(int[] nums, int target) {" \
-         "int n = nums.length;" \
+         "PRED " \
          "for (int i = 0; i < n; ++i) {" \
          "for (int j = i + 1; j < n; ++j) {" \
          "if (nums[i] + nums[j] == target) {" \
@@ -28,18 +38,20 @@ def generate_ast_nl_test():
     print('-' * 100)
     print(nl)
 
-def dataset_item_test():
-    source_path = './dataset/source.txt'
-    target_path = './dataset/target.txt'
-    codes, ast, names, target = parse_for_completion(source_path, target_path)
-    print('-'*100)
-    print(codes)
-    print('-'*100)
-    print(ast)
-    print('-'*100)
-    print(names)
-    print('-'*100)
-    print(target)
+
+# to see what dataset item like
+# def dataset_item_test():
+#     source_path = './dataset/source.txt'
+#     target_path = './dataset/target.txt'
+#     codes, ast, names, target = parse_for_completion(source_path, target_path)
+#     print('-'*100)
+#     print(codes)
+#     print('-'*100)
+#     print(ast)
+#     print('-'*100)
+#     print(names)
+#     print('-'*100)
+#     print(target)
 
 
 if __name__ == '__main__':
@@ -54,6 +66,7 @@ if __name__ == '__main__':
     add_args(parser)
     args = parser.parse_args()
 
+
     args.output_root = os.path.join(
         '..',
         'outputs',
@@ -61,10 +74,8 @@ if __name__ == '__main__':
     args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
     args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
-    preds, label = run_completion(
+    predictions = run_completion(
         args=args,
         source=SOURCE,
         trained_model=args.trained_model,
         trained_vocab=args.trained_vocab)
-    # print(labels)
-    print('--------------------------------------')

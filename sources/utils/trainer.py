@@ -19,7 +19,7 @@ class CodeTrainer(Seq2SeqTrainer):
         self.nl_vocab = nl_vocab
         self.task = task
         # using prediction_step(), no parameter passed to predict(), defined here
-        self._max_length = main_args.max_code_len
+        self._max_length = main_args.completion_max_len
         self._num_beams = main_args.beam_width
 
     def get_train_dataloader(self) -> DataLoader:
