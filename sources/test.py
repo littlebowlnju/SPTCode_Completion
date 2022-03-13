@@ -24,6 +24,15 @@ SOURCE = "public int[] twoSum(int[] nums, int target) {" \
          "return new int[]{i, j};}}}" \
          "return new int[0];}"
 
+SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, Text> output,Reporter reporter) throws IOException {" \
+          "String name = key.toString();" \
+          "long longValue = value.get();" \
+          """reporter.setStatus("starting " + name + " ::host = " + hostName);""" \
+          "PRED " \
+          "parseLogFile(fs, new Path(name), longValue, output, reporter);" \
+          "long tEnd = System.currentTimeMillis();" \
+          "long execTime = tEnd - tStart;" \
+          """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
 
 # test tokenize source code into tokens list
 def tokenize_source_test():
