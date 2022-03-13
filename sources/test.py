@@ -74,7 +74,7 @@ if __name__ == '__main__':
     args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
     args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
-    predictions = run_completion(
+    predictions, prediction_scores = run_completion(
         args=args,
         source=SOURCE,
         trained_model=args.trained_model,

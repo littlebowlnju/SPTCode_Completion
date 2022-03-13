@@ -170,6 +170,7 @@ def run_completion(
     # predict
     # -----------------------------
     predictions = []
+    prediction_scores = []
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     outputs = model.generate(
         input_ids=inputs['input_ids'].to(device),
@@ -178,11 +179,26 @@ def run_completion(
         min_length=3,
         early_stopping=True,
         num_beams=args.beam_width,
-        num_return_sequences=5
+        num_return_sequences=5,
+        output_scores=True,
+        return_dict_in_generate=True,
     )
-    outputs = outputs.view(1, -1, outputs.size(-1))
-    for output in outputs:
+    output_seqs = outputs.sequences
+    output_seq_scores = outputs.sequences_scores
+    output_seqs = output_seqs.view(1, -1, output_seqs.size(-1))
+    for output in output_seqs:
         predictions = code_vocab.decode_batch(output.cpu().numpy())  # decode to strings
     print('--------------- predictions -----------------')
     print(predictions)
-    return predictions
+    print('--------------- predictions‘ scores ----------------')
+    # score to softmax, transfer to probabilities sum to 1
+    m = torch.nn.Softmax(dim=0)
+    probabilities = m(output_seq_scores).cpu().numpy()
+
+    # return scores as float
+    prediction_scores = probabilities
+    # Or transfer to percentage strings
+    # for pro in probabilities:
+    #     prediction_scores.append("%.2f%%" % (pro * 100))
+    print(prediction_scores)
+    return predictions, prediction_scores

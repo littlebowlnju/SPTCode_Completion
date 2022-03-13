@@ -398,9 +398,9 @@ def get_concat_batch_inputs(code_raw, code_vocab, max_code_len,
     else:
         nl_inputs, nl_padding_mask = None, None
 
-    print(code_inputs.size())
-    print(ast_inputs.size())
-    print(nl_inputs.size())
+    # print(code_inputs.size())
+    # print(ast_inputs.size())
+    # print(nl_inputs.size())
     inputs = torch.cat([inputs for inputs in [code_inputs, ast_inputs, nl_inputs] if inputs is not None], dim=-1)
     padding_mask = torch.cat([mask for mask in [code_padding_mask, ast_padding_mask, nl_padding_mask]
                               if mask is not None], dim=-1)

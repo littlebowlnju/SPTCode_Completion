@@ -32,7 +32,8 @@ class RuntimeArguments:
     )
 
     trained_model: str = field(
-        default='./pre_trained/models/all/',
+        # default='./pre_trained/models/all/',
+        default='./completion_model/models/',
         metadata={'help': 'Directory of trained model'}
     )
 
