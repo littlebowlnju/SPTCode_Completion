@@ -2,7 +2,7 @@ from tree_sitter import Language
 
 import subprocess
 
-subprocess.run(['git', 'clone', f'git@github.com:tree-sitter/tree-sitter-java.git',
+subprocess.run(['git', 'clone', f'https://github.com/tree-sitter/tree-sitter-java.git',
                     f'vendor/tree-sitter-java'])
 
 Language.build_library(
