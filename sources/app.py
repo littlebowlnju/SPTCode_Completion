@@ -103,5 +103,5 @@ if __name__ == '__main__':
 
     # dataset_item_test()
 
-    app.run()
+    app.run(host="172.29.7.224",port=5000,debug=True)
 
