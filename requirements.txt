@@ -1,0 +1,10 @@
+Flask==2.0.3
+numpy==1.18.2
+prettytable==2.0.0
+psutil==5.8.0
+requests==2.22.0
+scikit_learn==1.0.2
+tokenizers==0.10.3
+torch==1.10.2
+tqdm==4.62.3
+transformers==4.8.2
