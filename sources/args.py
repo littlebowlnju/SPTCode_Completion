@@ -27,13 +27,12 @@ class RuntimeArguments:
     )
 
     trained_vocab: str = field(
-        default='./pre_trained/vocabs/',
+        default='../pre_trained/vocabs/',
         metadata={'help': 'Directory of trained vocabs'}
     )
 
     trained_model: str = field(
-        # default='./pre_trained/models/all/',
-        default='./completion_model/models/',
+        default='../pre_trained/models/all/',
         metadata={'help': 'Directory of trained model'}
     )
 

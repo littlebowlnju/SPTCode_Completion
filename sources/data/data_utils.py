@@ -8,9 +8,9 @@ from data.vocab import load_vocab, Vocab
 
 from data.data_collator import get_concat_batch_inputs, get_batch_inputs
 
-code_vocab = load_vocab('./pre_trained/vocabs/', 'code')
-nl_vocab = load_vocab('./pre_trained/vocabs/', 'nl')
-ast_vocab = load_vocab('./pre_trained/vocabs/', 'ast')
+code_vocab = load_vocab('../pre_trained/vocabs/', 'code')
+nl_vocab = load_vocab('../pre_trained/vocabs/', 'nl')
+ast_vocab = load_vocab('../pre_trained/vocabs/', 'ast')
 
 STRING_MATCHING_PATTERN = re.compile(r'([bruf]*)(\"\"\"|\'\'\'|\"|\')(?:(?!\2)(?:\\.|[^\\]))*\2')
 

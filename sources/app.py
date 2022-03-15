@@ -37,6 +37,7 @@ SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, T
           "long execTime = tEnd - tStart;" \
           """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
 
+
 # test tokenize source code into tokens list
 def tokenize_source_test():
     tokens = tokenize_source(SOURCE)
@@ -49,6 +50,7 @@ def generate_ast_nl_test():
     print(ast)
     print('-' * 100)
     print(nl)
+
 
 @app.route("/", methods=['POST', 'GET'])
 def generate_result():
@@ -73,8 +75,8 @@ def generate_result():
             trained_model=args.trained_model,
             trained_vocab=args.trained_vocab)
         result = [
-            {"predictions" : str(predictions)},
-            {"prediction_scores" : str(prediction_scores)}
+            {"predictions": str(predictions)},
+            {"prediction_scores": str(prediction_scores)}
         ]
         return jsonify(result)
     else:
@@ -103,5 +105,4 @@ if __name__ == '__main__':
 
     # dataset_item_test()
 
-    app.run()
-
+    app.run(host="172.29.7.224", port=1818, debug=True)
