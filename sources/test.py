@@ -21,5 +21,5 @@ SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, T
           """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
 
 data = SOURCE
-response = requests.post("{}/".format("http://127.0.0.1:5000"), json =data )
+response = requests.post("{}/".format("http://127.0.0.1:8000"), json =data )
 print(str(response.json()))

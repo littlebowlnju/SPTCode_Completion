@@ -58,7 +58,8 @@ def generate_result():
     parser.register('type', 'bool', lambda v: v.lower() in ['yes', 'true', 't', '1', 'y'])
 
     add_args(parser)
-    args = parser.parse_args()
+    # args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     args.output_root = os.path.join(
         '..',
@@ -98,6 +99,7 @@ def generate_result():
 #     print(target)
 
 
+
 if __name__ == '__main__':
     # tokenize_source_test()
 
@@ -105,4 +107,8 @@ if __name__ == '__main__':
 
     # dataset_item_test()
 
-    app.run(host="172.29.7.224", port=1818, debug=True)
+    # app.run(host="172.29.7.224", port=1818, debug=True)
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+
+    app.run()
