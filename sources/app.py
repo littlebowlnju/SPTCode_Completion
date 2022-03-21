@@ -136,7 +136,7 @@ def generate_result():
     args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
     if request.method == 'POST':
-        data = request.get_json()
+        data = request.get_data().decode("utf-8")
         print(args)
         predictions, prediction_scores = run_completion(
             args=args,
@@ -147,10 +147,10 @@ def generate_result():
         pre_scores = []
         for score in prediction_scores:
             pre_scores.append("%.2f%%" % (score * 100))
-        result = [
-            {"predictions": predictions},
-            {"prediction_scores": pre_scores}
-        ]
+        result = {
+            "predictions": predictions,
+            "prediction_scores": pre_scores
+        }
         return json.dumps(result)
     else:
         return jsonify({"about": "Hello World"})
