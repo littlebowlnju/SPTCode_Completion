@@ -1,5 +1,5 @@
 import grequests
-
+from gevent import monkey as curious_george
 
 # ------ original source ------------
 # SOURCE = "public int[] twoSum(int[] nums, int target) {" \
@@ -30,27 +30,35 @@ SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, T
           """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
 
 req_list = [ # 请求列表（慎重运行）
-    grequests.post("{}/".format("http://127.0.0.1:8000"), json =SOURCE),
-    grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json =SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE2),
-    #grequests.post("{}/".format("http://127.0.0.1:8000"), json=SOURCE),
+    grequests.post("{}/".format("http://127.0.0.1:8000"), data=SOURCE),
+    grequests.post("{}/".format("http://127.0.0.1:8000"), data=SOURCE2),
+    grequests.post("{}/".format("http://127.0.0.1:8000"), data=SOURCE),
+    grequests.post("{}/".format("http://127.0.0.1:8000"), data=SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE2),
+    #grequests.post("{}/".format("http://127.0.0.1:8000"), SOURCE),
 ]
 
-res_list = grequests.map(req_list, size=17)    # 并行发送，等最后一个运行完后返回
+curious_george.patch_all(thread=False, select=False)
+#urls = ["http://127.0.0.1:8000","http://127.0.0.1:8000","http://127.0.0.1:8000","http://127.0.0.1:8000"]
+#dataset = [SOURCE,SOURCE2,SOURCE,SOURCE2]
+#rs = (grequests.post(u, data=SOURCE2) for u in urls)
+
+res_list = grequests.map(req_list)    # 并行发送，等最后一个运行完后返回
 print(res_list[0].text)  # 打印第一个请求的响应文本
+print(res_list[1].text)
+print(res_list[2].text)
+print(res_list[3].text)

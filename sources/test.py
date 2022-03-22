@@ -1,7 +1,5 @@
 import requests
 
-
-# ------- source with PRED token -------------
 SOURCE = "public int[] twoSum(int[] nums, int target) {" \
          "PRED " \
          "for (int i = 0; i < n; ++i) {" \
@@ -20,6 +18,6 @@ SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, T
           "long execTime = tEnd - tStart;" \
           """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
 
-data = SOURCE
-response = requests.post("{}/".format("http://127.0.0.1:8000"), json =data )
+data = SOURCE2
+response = requests.post("{}/".format("http://127.0.0.1:8000"), data)
 print(str(response.json()))
