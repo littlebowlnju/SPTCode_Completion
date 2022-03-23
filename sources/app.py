@@ -2,6 +2,7 @@ import argparse
 import uuid
 import redis
 from threading import Thread
+import enums
 from flask import Flask, jsonify, request
 from data.data_utils import tokenize_source, parse_for_completion, generate_input
 from data.ast.ast_parser import generate_single_ast_nl
@@ -39,10 +40,8 @@ args.output_root = os.path.join(
 args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
 args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
-logger.info('Loading vocabularies from files')
 code_vocab = load_vocab(vocab_root=args.trained_vocab, name=args.code_vocab_name)
 
-logger.info('Loading the model from file')
 config = BartConfig.from_json_file(os.path.join(args.trained_model, 'config.json'))
 model = BartForClassificationAndGeneration.from_pretrained(os.path.join(args.trained_model, 'pytorch_model.bin'),
                                                            config=config)
