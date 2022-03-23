@@ -40,12 +40,13 @@ args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
 args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
 logger.info('Loading vocabularies from files')
-code_vocab = load_vocab(vocab_root=trained_vocab, name=args.code_vocab_name)
+code_vocab = load_vocab(vocab_root=args.trained_vocab, name=args.code_vocab_name)
 
 logger.info('Loading the model from file')
-config = BartConfig.from_json_file(os.path.join(trained_model, 'config.json'))
-model = BartForClassificationAndGeneration.from_pretrained(os.path.join(trained_model, 'pytorch_model.bin'),
+config = BartConfig.from_json_file(os.path.join(args.trained_model, 'config.json'))
+model = BartForClassificationAndGeneration.from_pretrained(os.path.join(args.trained_model, 'pytorch_model.bin'),
                                                            config=config)
+model.set_model_mode(enums.MODEL_MODE_GEN)
 
 # ------ original source ------------
 # SOURCE = "public int[] twoSum(int[] nums, int target) {" \
