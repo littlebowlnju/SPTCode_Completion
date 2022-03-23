@@ -1,22 +1,19 @@
 import argparse
-import uuid
+import logging
 import redis
 from threading import Thread
 import enums
 from flask import Flask, jsonify, request
-from data.data_utils import tokenize_source, parse_for_completion, generate_input
-from data.ast.ast_parser import generate_single_ast_nl
 from args import add_args
-from typing import Union, Tuple
 from transformers import BartConfig, Seq2SeqTrainingArguments, EarlyStoppingCallback, \
     IntervalStrategy, SchedulerType
 from data.vocab import Vocab, load_vocab, init_vocab
 from model.bart import BartForClassificationAndGeneration
-from utils.general import count_params, human_format, layer_wise_parameters
 import os
 import time
 import json
 
+logger = logging.getLogger(__name__)
 app = Flask(__name__)
 pool = redis.ConnectionPool(host='localhost', port=6379, max_connections=50)
 redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
@@ -47,48 +44,6 @@ model = BartForClassificationAndGeneration.from_pretrained(os.path.join(args.tra
                                                            config=config)
 model.set_model_mode(enums.MODEL_MODE_GEN)
 
-# ------ original source ------------
-# SOURCE = "public int[] twoSum(int[] nums, int target) {" \
-#          "int n = nums.length;" \
-#          "for (int i = 0; i < n; ++i) {" \
-#          "for (int j = i + 1; j < n; ++j) {" \
-#          "if (nums[i] + nums[j] == target) {" \
-#          "return new int[]{i, j};}}}" \
-#          "return new int[0];}"
-
-# ------- source with PRED token -------------
-SOURCE = "public int[] twoSum(int[] nums, int target) {" \
-         "PRED " \
-         "for (int i = 0; i < n; ++i) {" \
-         "for (int j = i + 1; j < n; ++j) {" \
-         "if (nums[i] + nums[j] == target) {" \
-         "return new int[]{i, j};}}}" \
-         "return new int[0];}"
-
-SOURCE2 = "public void map(Text key, LongWritable value, OutputCollector<Text, Text> output,Reporter reporter) throws IOException {" \
-          "String name = key.toString();" \
-          "long longValue = value.get();" \
-          """reporter.setStatus("starting " + name + " ::host = " + hostName);""" \
-          "PRED " \
-          "parseLogFile(fs, new Path(name), longValue, output, reporter);" \
-          "long tEnd = System.currentTimeMillis();" \
-          "long execTime = tEnd - tStart;" \
-          """reporter.setStatus("finished " + name + " ::host = " + hostName + " in " + execTime / 1000 + " sec.");}"""
-
-
-# test tokenize source code into tokens list
-def tokenize_source_test():
-    tokens = tokenize_source(SOURCE)
-    print(tokens)
-
-
-# test generate ast and nl from source code
-def generate_ast_nl_test():
-    ast, nl = generate_single_ast_nl(SOURCE)
-    print(ast)
-    print('-' * 100)
-    print(nl)
-
 
 @app.route("/", methods=['POST', 'GET'])
 def generate_result():
@@ -113,21 +68,6 @@ def generate_result():
         return json.dumps(result)
     else:
         return jsonify({"about": "Hello World"})
-
-
-# to see what dataset item like
-# def dataset_item_test():
-#     source_path = './dataset/source.txt'
-#     target_path = './dataset/target.txt'
-#     codes, ast, names, target = parse_for_completion(source_path, target_path)
-#     print('-'*100)
-#     print(codes)
-#     print('-'*100)
-#     print(ast)
-#     print('-'*100)
-#     print(names)
-#     print('-'*100)
-#     print(target)
 
 
 if __name__ == '__main__':
