@@ -6,11 +6,12 @@ MODEL_MODE_GEN = 'bart_gen'
 
 logger = logging.getLogger(__name__)
 
-def complete(args, source):
+
+def complete(args, source, model, code_vocab):
     inputs = generate_input(args, source)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    outputs = args.model.generate(
+    outputs = model.generate(
         input_ids=inputs['input_ids'].to(device),
         attention_mask=inputs['attention_mask'].to(device),
         max_length=args.completion_max_len,
@@ -26,7 +27,7 @@ def complete(args, source):
     output_seq_scores = outputs.sequences_scores
     output_seqs = output_seqs.view(1, -1, output_seqs.size(-1))
     for output in output_seqs:
-        predictions = args.trained_vocab[0].decode_batch(output.cpu().numpy())  # decode to strings
+        predictions = code_vocab.decode_batch(output.cpu().numpy())  # decode to strings
     print('--------------- predictions -----------------')
     print(predictions)
     print('--------------- predictions‘ scores ----------------')

@@ -25,6 +25,28 @@ batch_size = 1
 MODEL_MODE_GEN = 'bart_gen'
 args = None
 
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.register('type', 'bool', lambda v: v.lower() in ['yes', 'true', 't', '1', 'y'])
+
+add_args(parser)
+# args = parser.parse_args()
+args, unknown = parser.parse_known_args()
+
+args.output_root = os.path.join(
+    '..',
+    'outputs',
+    '{}_{}'.format(args.model_name, time.strftime('%Y%m%d_%H%M%S', time.localtime())))
+args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
+args.tensor_board_root = os.path.join(args.output_root, 'runs')
+
+logger.info('Loading vocabularies from files')
+code_vocab = load_vocab(vocab_root=trained_vocab, name=args.code_vocab_name)
+
+logger.info('Loading the model from file')
+config = BartConfig.from_json_file(os.path.join(trained_model, 'config.json'))
+model = BartForClassificationAndGeneration.from_pretrained(os.path.join(trained_model, 'pytorch_model.bin'),
+                                                           config=config)
+
 # ------ original source ------------
 # SOURCE = "public int[] twoSum(int[] nums, int target) {" \
 #          "int n = nums.length;" \
@@ -78,6 +100,8 @@ def generate_result():
         predictions, prediction_scores = complete(
             args=args,
             source=data,
+            model=model,
+            code_vocab=code_vocab
         )
         pre_scores = []
         for score in prediction_scores:
@@ -107,19 +131,7 @@ def generate_result():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.register('type', 'bool', lambda v: v.lower() in ['yes', 'true', 't', '1', 'y'])
 
-    add_args(parser)
-    # args = parser.parse_args()
-    args, unknown = parser.parse_known_args()
-
-    args.output_root = os.path.join(
-        '..',
-        'outputs',
-        '{}_{}'.format(args.model_name, time.strftime('%Y%m%d_%H%M%S', time.localtime())))
-    args.checkpoint_root = os.path.join(args.output_root, 'checkpoints')
-    args.tensor_board_root = os.path.join(args.output_root, 'runs')
 
     # tokenize_source_test()
 
