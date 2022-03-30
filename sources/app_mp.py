@@ -1,4 +1,3 @@
-# from multiprocessing import Queue
 import logging
 import redis
 from flask import Flask, request
@@ -13,7 +12,7 @@ from data.vocab import load_vocab
 from model.bart import BartForClassificationAndGeneration
 import os
 import enums
-from completion import complete
+from completion import complete, complete_batch
 import threading
 
 
@@ -59,21 +58,26 @@ def poll():
                 print("req_queue size: ", req_queue.qsize())
                 size = min(req_queue.qsize(), 100)
                 task_list = []
+                source_list = []
                 for _ in range(size):
-                    task_list.append(req_queue.get())
+                    task = req_queue.get()
+                    task_list.append(task)
+                    source_list.append(task.code)
 
+                # send the whole list to predict
+                predictions, predictions_scores = complete_batch(
+                    args=args,
+                    source_list=source_list,
+                    model=model,
+                    code_vocab=code_vocab
+                )
+                assert len(predictions) == len(predictions_scores) == size
                 for i in range(size):
-                    predictions, prediction_scores = complete(
-                        args=args,
-                        source=task_list[i].code,
-                        model=model,
-                        code_vocab=code_vocab
-                    )
                     pre_scores = []
-                    for score in prediction_scores:
+                    for score in predictions_scores[i]:
                         pre_scores.append("%.2f%%" % (score * 100))
                     result = {
-                        "predictions": predictions,
+                        "predictions": predictions[i],
                         "prediction_scores": pre_scores
                     }
                     task_list[i].set_result(result)

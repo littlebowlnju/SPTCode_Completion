@@ -8,9 +8,9 @@ from data.vocab import load_vocab, Vocab
 
 from data.data_collator import get_concat_batch_inputs, get_batch_inputs
 
-code_vocab = load_vocab('../pre_trained/vocabs/', 'code')
-nl_vocab = load_vocab('../pre_trained/vocabs/', 'nl')
-ast_vocab = load_vocab('../pre_trained/vocabs/', 'ast')
+code_vocab = load_vocab('./pre_trained/vocabs/', 'code')
+nl_vocab = load_vocab('./pre_trained/vocabs/', 'nl')
+ast_vocab = load_vocab('./pre_trained/vocabs/', 'ast')
 
 STRING_MATCHING_PATTERN = re.compile(r'([bruf]*)(\"\"\"|\'\'\'|\"|\')(?:(?!\2)(?:\\.|[^\\]))*\2')
 
@@ -111,6 +111,42 @@ def generate_input(args, source):
         ast_vocab=ast_vocab,
         max_ast_len=args.max_ast_len,
         nl_raw=name,
+        nl_vocab=nl_vocab,
+        max_nl_len=args.max_nl_len,
+        no_ast=args.no_ast,
+        no_nl=args.no_nl
+    )
+    return model_inputs
+
+
+def generate_batch_inputs(args, source_list):
+    """
+    generate a batch inputs
+    :param source_list: list[source1, source2, ...]
+    :return:
+    """
+    codes = []
+    asts = []
+    names = []
+    for source in source_list:
+        code = tokenize_source(source).strip()
+        code = restore_source(code)
+        ast, name = generate_single_ast_nl(code)
+        codes.append(code)
+        asts.append(ast)
+        names.append(name)
+
+    assert len(codes) == len(asts) == len(names)
+
+    model_inputs = {}
+    model_inputs['input_ids'], model_inputs['attention_mask'] = get_concat_batch_inputs(
+        code_raw=codes,
+        code_vocab=code_vocab,
+        max_code_len=args.max_code_len,
+        ast_raw=asts,
+        ast_vocab=ast_vocab,
+        max_ast_len=args.max_ast_len,
+        nl_raw=names,
         nl_vocab=nl_vocab,
         max_nl_len=args.max_nl_len,
         no_ast=args.no_ast,
