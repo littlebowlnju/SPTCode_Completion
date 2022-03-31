@@ -8,9 +8,7 @@ tokenizers==0.10.3
 torch==1.10.2
 tqdm==4.62.3
 transformers==4.8.2
-
 typing~=3.7.4.3
-scikit-learn~=0.20.3
-redis~=4.1.4
 Werkzeug~=2.0.3
-dataclasses~=0.8
+tree_sitter==0.19.0
+antlr4-python3-runtime==4.9.2

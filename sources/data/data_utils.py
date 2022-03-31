@@ -86,16 +86,16 @@ def generate_input(args, source):
     """
     # split source code to split source
     code = tokenize_source(source).strip()
-    print('-------split code---------')
-    print(code)
+    # print('-------split code---------')
+    # print(code)
     # restore
     code = restore_source(code)
-    print('-------restored code--------')
-    print(code)
+    # print('-------restored code--------')
+    # print(code)
     # generate ast and nl from restored code
     ast, name = generate_single_ast_nl(code)
-    print(ast)
-    print(name)
+    # print(ast)
+    # print(name)
 
     # transfer to sequence
     code = [code]

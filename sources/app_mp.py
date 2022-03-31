@@ -1,5 +1,4 @@
 import logging
-import redis
 from flask import Flask, request
 import json
 from concurrency.task import CodeCompletionTask
@@ -12,15 +11,13 @@ from data.vocab import load_vocab
 from model.bart import BartForClassificationAndGeneration
 import os
 import enums
-from completion import complete, complete_batch
+from completion import complete_batch
 import threading
+import torch
 
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
-pool = redis.ConnectionPool(host='localhost', port=6379, max_connections=50)
-redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
-
 db_key_query = 'query'
 db_key_result = 'result'
 batch_size = 1
@@ -47,6 +44,9 @@ config = BartConfig.from_json_file(os.path.join(args.trained_model, 'config.json
 model = BartForClassificationAndGeneration.from_pretrained(os.path.join(args.trained_model, 'pytorch_model.bin'),
                                                            config=config)
 model.set_model_mode(enums.MODEL_MODE_GEN)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
 req_queue = queue.Queue()
 
 
@@ -56,7 +56,8 @@ def poll():
         while True:
             if not req_queue.empty():
                 print("req_queue size: ", req_queue.qsize())
-                size = min(req_queue.qsize(), 100)
+                # batch size 4 is acceptable
+                size = min(req_queue.qsize(), 4)
                 task_list = []
                 source_list = []
                 for _ in range(size):
@@ -81,7 +82,9 @@ def poll():
                         "prediction_scores": pre_scores
                     }
                     task_list[i].set_result(result)
-            time.sleep(5)  # polling every 5 seconds
+
+            # polling every 0.01 seconds
+            time.sleep(0.01)
 
     thread = threading.Thread(target=check_queue)
     thread.start()

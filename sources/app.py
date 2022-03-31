@@ -1,8 +1,7 @@
 import argparse
 import logging
-import redis
-from threading import Thread
 import enums
+import torch
 from flask import Flask, jsonify, request
 from args import add_args
 from transformers import BartConfig, Seq2SeqTrainingArguments, EarlyStoppingCallback, \
@@ -15,8 +14,6 @@ import json
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
-pool = redis.ConnectionPool(host='localhost', port=6379, max_connections=50)
-redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 db_key_query = 'query'
 db_key_result = 'result'
 batch_size = 1
@@ -44,14 +41,15 @@ model = BartForClassificationAndGeneration.from_pretrained(os.path.join(args.tra
                                                            config=config)
 model.set_model_mode(enums.MODEL_MODE_GEN)
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
 
 @app.route("/", methods=['POST', 'GET'])
 def generate_result():
     from completion import complete
     if request.method == 'POST':
         data = request.get_data().decode("utf-8")
-        print(data)
-        #print(args)
         predictions, prediction_scores = complete(
             args=args,
             source=data,
@@ -71,18 +69,8 @@ def generate_result():
 
 
 if __name__ == '__main__':
-
-
-    # tokenize_source_test()
-
-    # generate_ast_nl_test()
-
-    # dataset_item_test()
-
     # app.run(host="172.29.7.224", port=1818, debug=True)
     from werkzeug.middleware.proxy_fix import ProxyFix
     app.wsgi_app = ProxyFix(app.wsgi_app)
 
-    # t = Thread(target=print_test, args=(batch_size,))
-    # t.start()
     app.run()
